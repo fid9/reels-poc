@@ -1,0 +1,27 @@
+version: '3.4'
+services:
+  postgres:
+    image: postgres:13-alpine
+    volumes:
+      - dbdata:/var/lib/postresql/data
+    ports:
+      - '127.0.0.1:5432:5432'
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: db
+      
+  #api:
+  #  build: .
+  #  links:
+  #    - postgres
+  #  ports:
+  #    - 8080:8080
+  #  env_file:
+  #    - .env.local
+  #  environment:
+  #    TYPEORM_HOST: postgres
+
+volumes:
+  dbdata:
+    name: db-volume

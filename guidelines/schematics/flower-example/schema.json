@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "SchematicsNestPovioFlowerExample",
+  "title": "Povio Nest Flower Example Options",
+  "type": "object",
+  "properties": {
+    "sourceRoot": {
+      "type": "string",
+      "description": "Nest module source root directory."
+    }
+  }
+}

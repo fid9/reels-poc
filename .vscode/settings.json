@@ -1,0 +1,17 @@
+{
+    "remote.extensionKind": {
+        "ms-vscode-remote.remote-containers": [ "ui" ],
+    },
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "postgres",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "local",
+            "database": "db",
+            "username": "admin",
+            "password": "admin"
+        }
+    ]
+}

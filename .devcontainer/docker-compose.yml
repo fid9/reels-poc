@@ -1,0 +1,16 @@
+version: '3.4'
+services:
+  dev:
+    image: povio-nodejs-dev:14.1
+    build:
+        context: .
+        dockerfile: .devcontainer/Dockerfile.dev
+    volumes: 
+        - ./:/workspace:delegated
+        # persist node_modules
+        - cached_node_modules:/workspace/node_modules
+    # do not quit on first error 
+    command: /bin/sh -c "while sleep 1000; do :; done"
+
+volumes:
+    cached_node_modules:

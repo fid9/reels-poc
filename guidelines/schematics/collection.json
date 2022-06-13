@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/@angular-devkit/schematics/collection-schema.json",
+  "schematics": {
+    "flower-example": {
+      "factory": "./flower-example/flower-example.factory#main",
+      "description": "Add Flower App Example Code",
+      "schema": "./flower-example/schema.json"
+    }
+  }
+}
