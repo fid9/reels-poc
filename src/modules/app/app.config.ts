@@ -52,6 +52,11 @@ class SwaggerConfig {
   authPassword?: string;
 }
 
+class S3Config {
+  @IsString()
+  bucketName: string;
+}
+
 export class AppConfig {
   @IsString()
   environment: string;
@@ -91,6 +96,10 @@ export class AppConfig {
   @ValidateNested()
   @Type(() => LogConfig)
   log: LogConfig;
+
+  @ValidateNested()
+  @Type(() => S3Config)
+  s3: S3Config;
 }
 
 export const appConfigFactory = registerAs('app', () => {
@@ -115,6 +124,9 @@ export const appConfigFactory = registerAs('app', () => {
     log: {
       requests: envToBoolean(process.env.LOG_REQUESTS),
       memoryUsage: envToBoolean(process.env.LOG_MEMORY_USAGE),
+    },
+    s3: {
+      bucketName: env.S3_BUCKET_NAME,
     },
   } as AppConfig);
 

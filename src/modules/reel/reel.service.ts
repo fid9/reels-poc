@@ -1,13 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { ReelEntity } from '~database/entities/reel.entity';
 import { ReelRepository } from '~database/repositories/reel.repository';
 
+import { NotFoundException } from '~common/exceptions';
 import {
   PaginatedListInterface,
   PaginationOptionsInterface,
 } from '~common/handlers/interfaces/list.interfaces';
+import { AppConfig, APP_CONFIG } from '~modules/app/app.config';
+import { AwsS3Service } from '~services/aws/aws-s3.service';
 
 interface ReelFilters {
   name?: string;
@@ -17,8 +20,10 @@ interface ReelFilters {
 @Injectable()
 export class ReelService {
   constructor(
+    private awsS3Service: AwsS3Service,
     @InjectRepository(ReelRepository)
     private reelRepository: ReelRepository,
+    @Inject(APP_CONFIG) private appConfig: AppConfig,
   ) {}
   async get(
     pagination: PaginationOptionsInterface,
@@ -45,5 +50,19 @@ export class ReelService {
     issuerId: string;
   }): Promise<ReelEntity> {
     return this.reelRepository.createReel(body);
+  }
+
+  async deleteReel(reelId: string): Promise<void> {
+    const fileExists = await this.awsS3Service.fileExists(
+      this.appConfig.s3.bucketName,
+      reelId,
+    );
+
+    if (!fileExists) {
+      throw new NotFoundException();
+    }
+
+    await this.reelRepository.deleteReel(reelId);
+    await this.awsS3Service.deleteFile(this.appConfig.s3.bucketName, reelId);
   }
 }

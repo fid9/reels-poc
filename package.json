@@ -47,6 +47,7 @@
     "@types/luxon": "^1.27.1",
     "@types/request-ip": "^0.0.37",
     "@types/uuid": "^8.3.1",
+    "aws-sdk": "^2.834.0",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
     "dotenv": "^10.0.0",

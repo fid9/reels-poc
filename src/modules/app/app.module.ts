@@ -8,6 +8,7 @@ import {
 } from '~modules/app/typeorm.config';
 import { ReelModule } from '~modules/reel/reel.module';
 import { UserModule } from '~modules/user/user.module';
+import { AwsModule } from '~services/aws/aws.module';
 import { SentryModule } from '~services/sentry/sentry.module';
 
 import { configModuleRootFactory } from './app.config';
@@ -30,6 +31,7 @@ import { AppService } from './app.service';
     }),
     ReelModule,
     UserModule,
+    AwsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

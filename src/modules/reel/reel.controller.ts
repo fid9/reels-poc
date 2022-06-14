@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 
 import { PaginatedList, PaginatedListQuery } from '~database/utils';
 
@@ -30,6 +38,20 @@ export class ReelController {
 
   @Post()
   async create(@Body() body: ReelCreateDto): Promise<ApiResponse<ReelDto>> {
+    return {
+      body: (await this.reelService.createReel(body)).toReelDetailsDto(),
+    };
+  }
+
+  @Delete('/:id')
+  async delete(@Param('id') id: string): Promise<void> {
+    await this.reelService.deleteReel(id);
+  }
+
+  @Post()
+  async likeOrUnlikeReel(
+    @Body() body: ReelCreateDto,
+  ): Promise<ApiResponse<ReelDto>> {
     return {
       body: (await this.reelService.createReel(body)).toReelDetailsDto(),
     };

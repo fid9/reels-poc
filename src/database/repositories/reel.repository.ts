@@ -1,9 +1,10 @@
-import { EntityRepository } from 'typeorm';
+import { DeleteResult, EntityRepository } from 'typeorm';
 
 import { ReelEntity } from '~database/entities/reel.entity';
 import { paginateQueryBuilder } from '~database/utils/list.helper';
 import { PostgresBaseRepository } from '~database/utils/postgres.base-repository';
 
+import { NotFoundException } from '~common/exceptions';
 import {
   PaginatedListInterface,
   PaginationOptionsInterface,
@@ -45,5 +46,15 @@ export class ReelRepository extends PostgresBaseRepository<ReelEntity> {
     reelEntity.issuerId = body.issuerId;
 
     return this.save(reelEntity);
+  }
+
+  public async deleteReel(reelId: string): Promise<DeleteResult> {
+    const reelEntity = await this.findOne({ reelId });
+
+    if (!reelEntity) {
+      throw new NotFoundException();
+    }
+
+    return this.delete(reelEntity.id);
   }
 }
