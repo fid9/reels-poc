@@ -20,12 +20,6 @@ export class ReelService {
     @InjectRepository(ReelRepository)
     private reelRepository: ReelRepository,
   ) {}
-
-  /**
-   * This example shows how to make a generic page pagination
-   *  - paginateQueryBuilder will handle offsets and ordering by fields
-   *  - filtering needs to be handled in the service (or repository)
-   */
   async get(
     pagination: PaginationOptionsInterface,
     filters?: ReelFilters,
@@ -44,5 +38,12 @@ export class ReelService {
       filters,
       options?.count,
     );
+  }
+
+  async createReel(body: {
+    reelId: string;
+    issuerId: string;
+  }): Promise<ReelEntity> {
+    return this.reelRepository.createReel(body);
   }
 }

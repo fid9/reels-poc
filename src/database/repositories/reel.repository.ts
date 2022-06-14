@@ -35,4 +35,15 @@ export class ReelRepository extends PostgresBaseRepository<ReelEntity> {
       ...(await paginateQueryBuilder(query, pagination, count)),
     };
   }
+
+  public async createReel(body: {
+    reelId: string;
+    issuerId: string;
+  }): Promise<ReelEntity> {
+    const reelEntity = new ReelEntity();
+    reelEntity.reelId = body.reelId;
+    reelEntity.issuerId = body.issuerId;
+
+    return this.save(reelEntity);
+  }
 }
