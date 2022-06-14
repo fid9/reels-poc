@@ -6,6 +6,7 @@ import {
   typeOrmConfigFactory,
   TYPEORM_CONFIG,
 } from '~modules/app/typeorm.config';
+import { ReelModule } from '~modules/reel/reel.module';
 import { SentryModule } from '~services/sentry/sentry.module';
 
 import { configModuleRootFactory } from './app.config';
@@ -26,6 +27,7 @@ import { AppService } from './app.service';
       },
       inject: [TYPEORM_CONFIG],
     }),
+    ReelModule,
   ],
   controllers: [AppController],
   providers: [AppService],

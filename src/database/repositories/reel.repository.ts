@@ -1,6 +1,6 @@
 import { EntityRepository } from 'typeorm';
 
-import { FlowerEntity } from '~database/entities';
+import { ReelEntity } from '~database/entities/reel.entity';
 import { paginateQueryBuilder } from '~database/utils/list.helper';
 import { PostgresBaseRepository } from '~database/utils/postgres.base-repository';
 
@@ -9,21 +9,14 @@ import {
   PaginationOptionsInterface,
 } from '~common/handlers/interfaces/list.interfaces';
 
-@EntityRepository(FlowerEntity)
-export class FlowerRepository extends PostgresBaseRepository<FlowerEntity> {
-  /**
-   * A repository is the glue between a service and an persistence layer. It should:
-   * - contain database specific code, including SQL and ORM methods
-   * - include other repositories as needed (relational databases do this implicitly)
-   * - not include any services or higher layers
-   * - not include business logic
-   */
+@EntityRepository(ReelEntity)
+export class ReelRepository extends PostgresBaseRepository<ReelEntity> {
   public async paginate(
     pagination: PaginationOptionsInterface,
     filters: { name?: string; description?: string } = {},
     count = false,
-  ): Promise<PaginatedListInterface<FlowerEntity>> {
-    let query = this.createQueryBuilder('flower');
+  ): Promise<PaginatedListInterface<ReelEntity>> {
+    let query = this.createQueryBuilder('reel');
 
     if (filters.description) {
       query = query.andWhere('LOWER(flower.description) LIKE :description', {

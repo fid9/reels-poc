@@ -15,15 +15,18 @@ export abstract class DatabaseIdOnlyEntity extends BaseEntity {
 }
 
 export abstract class DatabaseEntity extends DatabaseIdOnlyEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
   @VersionColumn()
   version: number;
 
   @CreateDateColumn()
-  createdDate: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updatedDate: Date;
+  updatedAt: Date;
 
   @DeleteDateColumn()
-  deletedDate: Date;
+  deletedAt: Date;
 }

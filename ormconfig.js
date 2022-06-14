@@ -28,7 +28,7 @@ let config = {
   migrationsRun: env.TYPEORM_MIGRATIONS_RUN ?? false,
   synchronize: false, // never use synchronize
   namingStrategy: new SnakeCaseNamingStrategy(),
-  entities: ['./src/database/entities/*.entity{.ts,.js}'],
+  entities: ['./src/database/entities/*.entity.ts'],
   migrations: ['./src/database/migrations/*{.ts,.js}'],
   cli: {
     entitiesDir: 'src/database/entities',
