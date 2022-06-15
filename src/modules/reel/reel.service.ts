@@ -45,11 +45,19 @@ export class ReelService {
     );
   }
 
+  async likeReel(body: { reelId: string; userId: string }): Promise<void> {
+    return this.reelRepository.likeReel(body);
+  }
+
   async createReel(body: {
     reelId: string;
     issuerId: string;
   }): Promise<ReelEntity> {
     return this.reelRepository.createReel(body);
+  }
+
+  async unlikeReel(reelId: string, userId: string): Promise<void> {
+    return this.reelRepository.unlikeReel(reelId, userId);
   }
 
   async deleteReel(reelId: string): Promise<void> {

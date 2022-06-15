@@ -1,5 +1,7 @@
-import { DeleteResult, EntityRepository } from 'typeorm';
+import { DeleteResult, EntityRepository, getRepository } from 'typeorm';
 
+import { ReelLikeCountEntity } from '~database/entities/reel-like-count.entity';
+import { ReelLikeEntity } from '~database/entities/reel-like.entity';
 import { ReelEntity } from '~database/entities/reel.entity';
 import { paginateQueryBuilder } from '~database/utils/list.helper';
 import { PostgresBaseRepository } from '~database/utils/postgres.base-repository';
@@ -56,5 +58,113 @@ export class ReelRepository extends PostgresBaseRepository<ReelEntity> {
     }
 
     return this.delete(reelEntity.id);
+  }
+
+  private async createLike(body: {
+    reelId: string;
+    userId: string;
+  }): Promise<void> {
+    const queryBuilder =
+      getRepository<ReelLikeEntity>('reel-like').createQueryBuilder(
+        'reel-like',
+      );
+
+    const reelLikeEntity = new ReelLikeEntity();
+
+    await queryBuilder
+      .insert()
+      .into(ReelLikeEntity)
+      .values([
+        {
+          ...reelLikeEntity,
+          ...body,
+        },
+      ])
+      .execute();
+  }
+
+  private async deleteLike(reelId: string, userId: string): Promise<void> {
+    const queryBuilder =
+      getRepository<ReelLikeEntity>('reel-like').createQueryBuilder(
+        'reel-like',
+      );
+
+    await queryBuilder
+      .delete()
+      .where(`"reel-like".reel_id = :reelId`, { reelId })
+      .andWhere(`"reel-like".user_id = :userId`, { userId })
+      .execute();
+  }
+
+  private async incrementLikeCount(reelId: string): Promise<void> {
+    const queryBuilder =
+      getRepository<ReelLikeCountEntity>('reel-like-count').createQueryBuilder(
+        'reel-like-count',
+      );
+
+    const likeCount = await queryBuilder
+      .where(`"reel-like-count".reel_id = :reelId`, { reelId })
+      .getOne();
+
+    if (!likeCount) {
+      const likeCountEntity = new ReelLikeCountEntity();
+      await queryBuilder
+        .insert()
+        .into(ReelLikeCountEntity)
+        .values([
+          {
+            ...likeCountEntity,
+            reelId,
+            count: 1,
+          },
+        ])
+        .execute();
+
+      return;
+    }
+
+    await queryBuilder
+      .update(ReelLikeCountEntity)
+      .set({ count: () => 'count + 1' })
+      .where(`"reel-like-count".reel_id = :reelId`, { reelId })
+      .execute();
+  }
+
+  private async decrementLikeCount(reelId: string): Promise<void> {
+    const queryBuilder =
+      getRepository<ReelLikeCountEntity>('reel-like-count').createQueryBuilder(
+        'reel-like-count',
+      );
+
+    await queryBuilder
+      .update(ReelLikeCountEntity)
+      .set({ count: () => 'count - 1' })
+      .where(`"reel-like-count".reel_id = :reelId`, { reelId })
+      .execute();
+  }
+
+  public async unlikeReel(reelId: string, userId: string): Promise<void> {
+    const reelEntity = await this.findOne(reelId);
+
+    if (!reelEntity) {
+      throw new NotFoundException();
+    }
+
+    await this.deleteLike(reelEntity?.id, userId);
+    await this.decrementLikeCount(reelEntity.id);
+  }
+
+  public async likeReel(body: {
+    reelId: string;
+    userId: string;
+  }): Promise<void> {
+    const reelEntity = await this.findOne(body.reelId);
+
+    if (!reelEntity) {
+      throw new NotFoundException();
+    }
+
+    await this.createLike(body);
+    await this.incrementLikeCount(body.reelId);
   }
 }
