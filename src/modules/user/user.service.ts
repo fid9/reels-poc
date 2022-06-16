@@ -11,7 +11,12 @@ export class UserService {
     private userRepository: UserRepository,
   ) {}
 
-  async create(body: { type: string }): Promise<UserEntity> {
+  async create(body: {
+    type: string;
+    isVerified: boolean;
+    username: string;
+    displayName: string;
+  }): Promise<UserEntity> {
     return this.userRepository.createUser(body);
   }
 }

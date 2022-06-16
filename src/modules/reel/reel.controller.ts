@@ -14,7 +14,7 @@ import { ApiResponse } from '~common/endpoint/api.interface';
 
 import { ReelFiltersDto } from './dto/reel-filters.dto';
 import { ReelCreateDto } from './dto/reel.create.dto';
-import { ReelDto } from './dto/reel.dto';
+import { ReelDetailsDto } from './dto/reel.details.dto';
 import { ReelLikeDto } from './dto/reel.like.dto';
 import { ReelService } from './reel.service';
 
@@ -26,19 +26,21 @@ export class ReelController {
   async list(
     @Query() pagination: PaginatedListQuery,
     @Query('filters') filters: ReelFiltersDto,
-  ): Promise<PaginatedList<ReelDto>> {
+  ): Promise<PaginatedList<ReelDetailsDto>> {
     const List = await this.reelService.get(pagination, filters, {
       count: true,
     });
 
     return PaginatedList.fromPaginatedListInterface(
       List,
-      ReelDto.fromReelEntity,
+      ReelDetailsDto.fromReelEntity,
     );
   }
 
   @Post()
-  async create(@Body() body: ReelCreateDto): Promise<ApiResponse<ReelDto>> {
+  async create(
+    @Body() body: ReelCreateDto,
+  ): Promise<ApiResponse<ReelDetailsDto>> {
     return {
       body: (await this.reelService.createReel(body)).toReelDetailsDto(),
     };
