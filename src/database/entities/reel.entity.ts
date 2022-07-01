@@ -1,3 +1,4 @@
+import { IsEnum } from 'class-validator';
 import {
   Entity,
   Column,
@@ -10,6 +11,8 @@ import {
 import { DatabaseEntity } from '~database/utils/postgres.base-entity';
 
 import { ReelDetailsDto } from '~modules/reel/dto/reel.details.dto';
+import { ReelStatus } from '~modules/reel/enums/reel-status.enum';
+import { ReelUploadStatus } from '~modules/reel/enums/reel-upload-status.enum';
 
 import { ReelLikeCountEntity } from './reel-like-count.entity';
 import { ReelLikeEntity } from './reel-like.entity';
@@ -24,6 +27,28 @@ export class ReelEntity extends DatabaseEntity {
 
   @Column()
   reelId: string;
+
+  @Column()
+  jobId: string;
+
+  @Column('enum', {
+    nullable: false,
+    default: ReelStatus.SUBMITTED,
+    enum: ReelStatus,
+  })
+  @IsEnum(ReelStatus)
+  status: ReelStatus;
+
+  @Column('enum', {
+    nullable: false,
+    default: ReelUploadStatus.SUBMITTED,
+    enum: ReelUploadStatus,
+  })
+  @IsEnum(ReelStatus)
+  uploadStatus: ReelUploadStatus;
+
+  @Column({ default: true })
+  isVisible: boolean;
 
   @ManyToOne('UserEntity', (user: UserEntity) => user.reels, {
     onDelete: 'NO ACTION',
@@ -54,6 +79,9 @@ export class ReelEntity extends DatabaseEntity {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       reelId: this.reelId,
+      status: this.status,
+      isVisible: this.isVisible,
+      uploadStatus: this.uploadStatus,
       user: this.user?.toUserDetailsDto(),
       likeCount: this.likeCount?.toReelLikeCountDetailsDto(),
       likes: this.likes?.map((x) => x.toReelLikeDetailsDto()),

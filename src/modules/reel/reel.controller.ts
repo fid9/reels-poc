@@ -3,9 +3,11 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   Post,
   Query,
+  Request,
 } from '@nestjs/common';
 
 import { PaginatedList, PaginatedListQuery } from '~database/utils';
@@ -37,6 +39,16 @@ export class ReelController {
     );
   }
 
+  @Post('/job-state-change')
+  @Header('content-type', 'text/plain; charset=UTF-8')
+  async handleJobStateChange(@Request() request: any): Promise<void> {
+    const event = JSON.parse(request.rawBody);
+    const message = JSON.parse(event.Message);
+    await this.reelService.updateReelUploadStatus(message.detail.jobId, {
+      uploadStatus: message.detail.status,
+    });
+  }
+
   @Post()
   async create(
     @Body() body: ReelCreateDto,
@@ -58,8 +70,6 @@ export class ReelController {
 
   @Delete('/likes/:id')
   async unlikeReel(@Param('id') id: string): Promise<void> {
-    const reelId = id.substring(0, id.indexOf('_'));
-    const userId = id.substring(id.indexOf('_') + 1, id.length);
-    await this.reelService.unlikeReel(reelId, userId);
+    await this.reelService.unlikeReel(id);
   }
 }

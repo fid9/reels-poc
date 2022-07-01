@@ -1,0 +1,5 @@
+export enum ReelStatus {
+  APPROVED = 'APPROVED',
+  SUBMITTED = 'SUBMITTED',
+  NEEDS_CHANGES = 'NEEDS_CHANGES',
+}

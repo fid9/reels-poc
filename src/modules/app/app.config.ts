@@ -51,6 +51,22 @@ class SwaggerConfig {
   @IsString()
   authPassword?: string;
 }
+export class MediaConvertAwsConfig {
+  // @IsString()
+  // queueArn: string;
+
+  @IsString()
+  roleArn: string;
+
+  @IsString()
+  inputBucketName: string;
+
+  @IsString()
+  outputBucketName: string;
+
+  @IsString()
+  region: string;
+}
 
 class S3Config {
   @IsString()
@@ -100,6 +116,10 @@ export class AppConfig {
   @ValidateNested()
   @Type(() => S3Config)
   s3: S3Config;
+
+  @ValidateNested()
+  @Type(() => MediaConvertAwsConfig)
+  mediaConvert: MediaConvertAwsConfig;
 }
 
 export const appConfigFactory = registerAs('app', () => {
@@ -127,6 +147,13 @@ export const appConfigFactory = registerAs('app', () => {
     },
     s3: {
       bucketName: env.S3_BUCKET_NAME,
+    },
+    mediaConvert: {
+      // queueArn: env.MEDIA_CONVERT_QUEUE_ARN,
+      roleArn: env.MEDIA_CONVERT_ROLE_ARN,
+      inputBucketName: env.S3_REELS_INPUT_BUCKET_NAME,
+      outputBucketName: env.S3_REELS_OUTPUT_BUCKET_NAME,
+      region: env.MEDIA_CONVERT_REGION,
     },
   } as AppConfig);
 

@@ -1,3 +1,4 @@
+import { InternalServerErrorException } from '@nestjs/common';
 import { DeleteResult, EntityRepository, getRepository } from 'typeorm';
 
 import { ReelLikeCountEntity } from '~database/entities/reel-like-count.entity';
@@ -11,6 +12,8 @@ import {
   PaginatedListInterface,
   PaginationOptionsInterface,
 } from '~common/handlers/interfaces/list.interfaces';
+import { ReelStatus } from '~modules/reel/enums/reel-status.enum';
+import { ReelUploadStatus } from '~modules/reel/enums/reel-upload-status.enum';
 
 @EntityRepository(ReelEntity)
 export class ReelRepository extends PostgresBaseRepository<ReelEntity> {
@@ -39,15 +42,49 @@ export class ReelRepository extends PostgresBaseRepository<ReelEntity> {
     };
   }
 
+  public async updateReel(
+    reel: ReelEntity,
+    data: {
+      uploadStatus: string;
+      isVisible?: boolean;
+      status?: ReelStatus;
+    },
+  ): Promise<void> {
+    if (data.uploadStatus) {
+      reel.uploadStatus = data.uploadStatus as ReelUploadStatus;
+
+      if (data.uploadStatus === ReelUploadStatus.ERROR) {
+        // TODO: log or something
+      }
+    }
+
+    if (data.isVisible !== undefined) {
+      reel.isVisible = data.isVisible;
+    }
+
+    if (data.status) {
+      reel.status = data.status;
+    }
+
+    await this.save(reel);
+  }
+
   public async createReel(body: {
+    jobId: string;
     reelId: string;
     issuerId: string;
   }): Promise<ReelEntity> {
     const reelEntity = new ReelEntity();
     reelEntity.reelId = body.reelId;
     reelEntity.issuerId = body.issuerId;
+    reelEntity.jobId = body.jobId;
 
-    return this.save(reelEntity);
+    try {
+      return await this.save(reelEntity);
+    } catch (e) {
+      console.log(e);
+      throw new InternalServerErrorException('Internal error on DB');
+    }
   }
 
   public async deleteReel(reelId: string): Promise<DeleteResult> {
