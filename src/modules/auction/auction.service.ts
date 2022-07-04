@@ -11,7 +11,10 @@ export class AuctionService {
     private auctionRepository: AuctionRepository,
   ) {}
 
-  async create(body: { issuerId: string }): Promise<AuctionEntity> {
+  async create(body: {
+    issuerId: string;
+    isLive: boolean;
+  }): Promise<AuctionEntity> {
     return this.auctionRepository.createAuction(body);
   }
 

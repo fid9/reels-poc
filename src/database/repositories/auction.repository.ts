@@ -10,6 +10,7 @@ import { ForbiddenException } from '~common/exceptions';
 export class AuctionRepository extends PostgresBaseRepository<AuctionEntity> {
   public async createAuction(body: {
     issuerId: string;
+    isLive: boolean;
   }): Promise<AuctionEntity> {
     const existingAuction = await this.findOne({
       where: {
@@ -22,7 +23,8 @@ export class AuctionRepository extends PostgresBaseRepository<AuctionEntity> {
     }
 
     const auctionEntity = new AuctionEntity();
-    auctionEntity.isLive = true;
+    auctionEntity.isLive = body.isLive;
+    auctionEntity.issuerId = body.issuerId;
     auctionEntity.currentPrice = 0;
     auctionEntity.percentageNumber = 0;
 

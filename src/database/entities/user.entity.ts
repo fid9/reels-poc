@@ -5,6 +5,7 @@ import { DatabaseEntity } from '~database/utils/postgres.base-entity';
 import { UserDetailsDto } from '~modules/user/dto/user.details.dto';
 
 import { AuctionEntity } from './auction.entity';
+import { ReelLikeEntity } from './reel-like.entity';
 import { ReelEntity } from './reel.entity';
 
 @Entity('user')
@@ -12,7 +13,7 @@ export class UserEntity extends DatabaseEntity {
   @Column()
   type: string;
 
-  @Column()
+  @Column({ unique: true })
   username: string;
 
   @Column()
@@ -29,6 +30,9 @@ export class UserEntity extends DatabaseEntity {
 
   @OneToMany('ReelEntity', (reel: ReelEntity) => reel.user)
   reels?: ReelEntity[];
+
+  @OneToMany('ReelLikeEntity', (like: ReelLikeEntity) => like.user)
+  likes?: ReelLikeEntity[];
 
   public toUserDetailsDto(): UserDetailsDto {
     return {

@@ -5,5 +5,5 @@ export class ReelCreateDto {
   public readonly issuerId: string;
 
   @IsString()
-  public readonly reelId: string;
+  public readonly objectId: string;
 }

@@ -67,6 +67,7 @@ export class AwsS3Service {
 
       return response.Metadata;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.log(error);
       return undefined;
     }

@@ -1,7 +1,6 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { DeleteResult, EntityRepository, getRepository } from 'typeorm';
 
-import { ReelLikeCountEntity } from '~database/entities/reel-like-count.entity';
 import { ReelLikeEntity } from '~database/entities/reel-like.entity';
 import { ReelEntity } from '~database/entities/reel.entity';
 import { paginateQueryBuilder } from '~database/utils/list.helper';
@@ -13,7 +12,6 @@ import {
   PaginationOptionsInterface,
 } from '~common/handlers/interfaces/list.interfaces';
 import { ReelStatus } from '~modules/reel/enums/reel-status.enum';
-import { ReelUploadStatus } from '~modules/reel/enums/reel-upload-status.enum';
 
 @EntityRepository(ReelEntity)
 export class ReelRepository extends PostgresBaseRepository<ReelEntity> {
@@ -42,18 +40,32 @@ export class ReelRepository extends PostgresBaseRepository<ReelEntity> {
     };
   }
 
+  public async fetchListByIssuerId(
+    issuerId: string,
+    pagination: PaginationOptionsInterface,
+  ): Promise<PaginatedListInterface<ReelEntity>> {
+    const query = this.createQueryBuilder('reel')
+      .innerJoin('reel.user', 'user')
+      .where(`user.type = :issuerType`, { issuerType: 'ISSUER' })
+      .andWhere(`user.id = :issuerId`, { issuerId })
+      .orderBy({
+        'reel.createdAt': 'DESC',
+      });
+
+    return paginateQueryBuilder(query, pagination);
+  }
+
   public async updateReel(
     reel: ReelEntity,
     data: {
-      uploadStatus: string;
       isVisible?: boolean;
-      status?: ReelStatus;
+      status?: string;
     },
   ): Promise<void> {
-    if (data.uploadStatus) {
-      reel.uploadStatus = data.uploadStatus as ReelUploadStatus;
+    if (data.status) {
+      reel.status = data.status as ReelStatus;
 
-      if (data.uploadStatus === ReelUploadStatus.ERROR) {
+      if (data.status === ReelStatus.UPLOAD_ERROR) {
         // TODO: log or something
       }
     }
@@ -62,33 +74,28 @@ export class ReelRepository extends PostgresBaseRepository<ReelEntity> {
       reel.isVisible = data.isVisible;
     }
 
-    if (data.status) {
-      reel.status = data.status;
-    }
-
     await this.save(reel);
   }
 
   public async createReel(body: {
     jobId: string;
-    reelId: string;
+    objectId: string;
     issuerId: string;
   }): Promise<ReelEntity> {
     const reelEntity = new ReelEntity();
-    reelEntity.reelId = body.reelId;
+    reelEntity.objectId = body.objectId;
     reelEntity.issuerId = body.issuerId;
     reelEntity.jobId = body.jobId;
 
     try {
       return await this.save(reelEntity);
     } catch (e) {
-      console.log(e);
       throw new InternalServerErrorException('Internal error on DB');
     }
   }
 
-  public async deleteReel(reelId: string): Promise<DeleteResult> {
-    const reelEntity = await this.findOne({ reelId });
+  public async deleteReel(objectId: string): Promise<DeleteResult> {
+    const reelEntity = await this.findOne({ objectId });
 
     if (!reelEntity) {
       throw new NotFoundException();
@@ -134,49 +141,22 @@ export class ReelRepository extends PostgresBaseRepository<ReelEntity> {
   }
 
   private async incrementLikeCount(reelId: string): Promise<void> {
-    const queryBuilder =
-      getRepository<ReelLikeCountEntity>('reel-like-count').createQueryBuilder(
-        'reel-like-count',
-      );
-
-    const likeCount = await queryBuilder
-      .where(`"reel-like-count".reel_id = :reelId`, { reelId })
-      .getOne();
-
-    if (!likeCount) {
-      const likeCountEntity = new ReelLikeCountEntity();
-      await queryBuilder
-        .insert()
-        .into(ReelLikeCountEntity)
-        .values([
-          {
-            ...likeCountEntity,
-            reelId,
-            count: 1,
-          },
-        ])
-        .execute();
-
-      return;
-    }
-
-    await queryBuilder
-      .update(ReelLikeCountEntity)
-      .set({ count: () => 'count + 1' })
-      .where(`"reel-like-count".reel_id = :reelId`, { reelId })
+    await this.createQueryBuilder('reel')
+      .update(ReelEntity)
+      .set({ likeCount: () => 'likeCount + 1' })
+      .where('reel.id = :reelId', {
+        reelId,
+      })
       .execute();
   }
 
   private async decrementLikeCount(reelId: string): Promise<void> {
-    const queryBuilder =
-      getRepository<ReelLikeCountEntity>('reel-like-count').createQueryBuilder(
-        'reel-like-count',
-      );
-
-    await queryBuilder
-      .update(ReelLikeCountEntity)
-      .set({ count: () => 'count - 1' })
-      .where(`"reel-like-count".reel_id = :reelId`, { reelId })
+    await this.createQueryBuilder('reel')
+      .update(ReelEntity)
+      .set({ likeCount: () => 'likeCount - 1' })
+      .where('reel.id = :reelId', {
+        reelId,
+      })
       .execute();
   }
 
@@ -191,17 +171,17 @@ export class ReelRepository extends PostgresBaseRepository<ReelEntity> {
     await this.decrementLikeCount(reelEntity.id);
   }
 
-  public async likeReel(body: {
+  public async likeReel(data: {
     reelId: string;
     userId: string;
   }): Promise<void> {
-    const reelEntity = await this.findOne(body.reelId);
+    const reelEntity = await this.findOne(data.reelId);
 
     if (!reelEntity) {
       throw new NotFoundException();
     }
 
-    await this.createLike(body);
-    await this.incrementLikeCount(body.reelId);
+    await this.createLike(data);
+    await this.incrementLikeCount(data.reelId);
   }
 }

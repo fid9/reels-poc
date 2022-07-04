@@ -24,10 +24,9 @@ export class AwsMediaConvertService {
 
     try {
       const job = await this._mediaConvertClient.createJob(params).promise();
-      console.log(job.$response.data);
-      console.log(job.Job);
       return job;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.log(error);
       throw new InternalServerException('Internal error occurred!');
     }

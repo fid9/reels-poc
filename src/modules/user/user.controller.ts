@@ -1,4 +1,5 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Request } from '@nestjs/common';
+import { Request as ApiRequest } from 'express';
 
 import { ApiResponse } from '~common/endpoint/api.interface';
 import { UserDetailsDto } from '~modules/user/dto/user.details.dto';
@@ -13,7 +14,11 @@ export class UserController {
   @Post()
   async create(
     @Body() body: UserCreateDto,
+    @Request() req: ApiRequest,
   ): Promise<ApiResponse<UserDetailsDto>> {
-    return { body: (await this.userService.create(body)).toUserDetailsDto() };
+    // TODO: get body
+    return {
+      body: (await this.userService.create(req.body)).toUserDetailsDto(),
+    };
   }
 }

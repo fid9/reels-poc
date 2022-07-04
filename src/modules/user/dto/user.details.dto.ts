@@ -7,6 +7,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+import { UserEntity } from '~database/entities/user.entity';
+
 import { ReelDetailsDto } from '~modules/reel/dto/reel.details.dto';
 
 export class UserDetailsDto {
@@ -27,14 +29,27 @@ export class UserDetailsDto {
 
   @IsDate()
   @Type(() => Date)
-  readonly createdAt: Date;
+  @IsOptional()
+  readonly createdAt?: Date;
 
   @IsDate()
   @Type(() => Date)
-  readonly updatedAt: Date;
+  @IsOptional()
+  readonly updatedAt?: Date;
 
   @ValidateNested({ each: true })
   @Type(() => ReelDetailsDto)
   @IsOptional()
   readonly reels?: ReelDetailsDto[];
+
+  static fromUserEntity(userEntity: UserEntity): UserDetailsDto {
+    return {
+      id: userEntity.id,
+      type: userEntity.type,
+      username: userEntity.username,
+      displayName: userEntity.displayName,
+      isVerified: userEntity.isVerified,
+      reels: userEntity.reels?.map((x) => x.toReelDetailsDto()),
+    };
+  }
 }

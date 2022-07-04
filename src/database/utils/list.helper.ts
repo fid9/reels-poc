@@ -27,6 +27,7 @@ export async function paginateQueryBuilder<EntityType>(
       : pagination.defaultOrder && pagination.defaultOrder.length > 0
       ? pagination.defaultOrder
       : [];
+
   if (order.length > 0) {
     q = orderQuery(q, order);
   }
@@ -45,14 +46,16 @@ export async function paginateQueryBuilder<EntityType>(
       total: total,
     };
   } else {
+    const items = await q
+      .take(limit)
+      .skip((page - 1) * limit)
+      .getMany();
+
     return {
       order,
       page,
       limit,
-      items: await q
-        .take(limit)
-        .skip((page - 1) * limit)
-        .getMany(),
+      items,
       total: undefined,
     };
   }

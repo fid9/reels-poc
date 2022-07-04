@@ -1,20 +1,11 @@
 import { IsEnum } from 'class-validator';
-import {
-  Entity,
-  Column,
-  OneToMany,
-  OneToOne,
-  JoinColumn,
-  ManyToOne,
-} from 'typeorm';
+import { Entity, Column, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
 
 import { DatabaseEntity } from '~database/utils/postgres.base-entity';
 
 import { ReelDetailsDto } from '~modules/reel/dto/reel.details.dto';
 import { ReelStatus } from '~modules/reel/enums/reel-status.enum';
-import { ReelUploadStatus } from '~modules/reel/enums/reel-upload-status.enum';
 
-import { ReelLikeCountEntity } from './reel-like-count.entity';
 import { ReelLikeEntity } from './reel-like.entity';
 import { ReelReportEntity } from './reel-report.entity';
 import { ReelViewEntity } from './reel-view.entity';
@@ -25,43 +16,32 @@ export class ReelEntity extends DatabaseEntity {
   @Column({ type: 'uuid' })
   issuerId: string;
 
-  @Column()
-  reelId: string;
+  @Column({ unique: true })
+  objectId: string;
 
-  @Column()
+  @Column({ unique: true })
   jobId: string;
 
   @Column('enum', {
     nullable: false,
-    default: ReelStatus.SUBMITTED,
+    default: ReelStatus.UPLOAD_SUBMITTED,
     enum: ReelStatus,
   })
   @IsEnum(ReelStatus)
   status: ReelStatus;
 
-  @Column('enum', {
-    nullable: false,
-    default: ReelUploadStatus.SUBMITTED,
-    enum: ReelUploadStatus,
-  })
-  @IsEnum(ReelStatus)
-  uploadStatus: ReelUploadStatus;
-
   @Column({ default: true })
   isVisible: boolean;
+
+  @Column({ default: 0 })
+  likeCount: number;
 
   @ManyToOne('UserEntity', (user: UserEntity) => user.reels, {
     onDelete: 'NO ACTION',
     onUpdate: 'NO ACTION',
   })
-  @JoinColumn([{ name: 'issuerId', referencedColumnName: 'id' }])
+  @JoinColumn([{ name: 'issuer_id', referencedColumnName: 'id' }])
   user?: UserEntity;
-
-  @OneToOne(
-    'ReelLikeCountEntity',
-    (likeCount: ReelLikeCountEntity) => likeCount.reel,
-  )
-  likeCount: ReelLikeCountEntity;
 
   @OneToMany('ReelLikeEntity', (like: ReelLikeEntity) => like.reel)
   likes: ReelLikeEntity[];
@@ -77,13 +57,12 @@ export class ReelEntity extends DatabaseEntity {
       id: this.id,
       issuerId: this.issuerId,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      reelId: this.reelId,
+      objectId: this.objectId,
+      jobId: this.jobId,
       status: this.status,
       isVisible: this.isVisible,
-      uploadStatus: this.uploadStatus,
       user: this.user?.toUserDetailsDto(),
-      likeCount: this.likeCount?.toReelLikeCountDetailsDto(),
+      likeCount: this.likeCount,
       likes: this.likes?.map((x) => x.toReelLikeDetailsDto()),
       views: this.views?.map((x) => x.toReelViewDetailsDto()),
       reports: this.reports?.map((x) => x.toReelReportDetailsDto()),

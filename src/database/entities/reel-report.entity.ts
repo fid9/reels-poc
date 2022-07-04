@@ -24,7 +24,7 @@ export class ReelReportEntity extends DatabaseEntity {
     onDelete: 'NO ACTION',
     onUpdate: 'NO ACTION',
   })
-  @JoinColumn([{ name: 'reelId', referencedColumnName: 'id' }])
+  @JoinColumn([{ name: 'reel_id', referencedColumnName: 'id' }])
   reel?: ReelEntity;
 
   public toReelReportDetailsDto(): ReelReportDetailsDto {

@@ -2,7 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { ReelEntity } from '~database/entities/reel.entity';
+import { UserEntity } from '~database/entities/user.entity';
 import { ReelRepository } from '~database/repositories/reel.repository';
+import { UserRepository } from '~database/repositories/user.repository';
 
 import {
   BadRequestException,
@@ -17,10 +19,7 @@ import { AppConfig, APP_CONFIG } from '~modules/app/app.config';
 import { AwsMediaConvertService } from '~services/aws/aws-mediaConvert.service';
 import { AwsS3Service } from '~services/aws/aws-s3.service';
 
-interface ReelFilters {
-  name?: string;
-  description?: string;
-}
+import { ReelStatus } from './enums/reel-status.enum';
 
 @Injectable()
 export class ReelService {
@@ -29,26 +28,22 @@ export class ReelService {
     private awsMediaConvertService: AwsMediaConvertService,
     @InjectRepository(ReelRepository)
     private reelRepository: ReelRepository,
+    @InjectRepository(UserRepository)
+    private userRepository: UserRepository,
     @Inject(APP_CONFIG) private appConfig: AppConfig,
   ) {}
-  async get(
-    pagination: PaginationOptionsInterface,
-    filters?: ReelFilters,
-    options?: {
-      count: boolean;
-    },
-  ): Promise<PaginatedListInterface<ReelEntity>> {
-    //  filter to protect from unwanted non-index orders here
-    const order = pagination?.order || [];
 
-    return this.reelRepository.paginate(
-      {
-        ...pagination,
-        order,
-      },
-      filters,
-      options?.count,
-    );
+  public async getList(
+    pagination: PaginationOptionsInterface,
+  ): Promise<PaginatedListInterface<UserEntity>> {
+    return this.userRepository.fetchList(pagination);
+  }
+
+  public async getIssuerList(
+    issuerId: string,
+    pagination: PaginationOptionsInterface,
+  ): Promise<PaginatedListInterface<ReelEntity>> {
+    return this.reelRepository.fetchListByIssuerId(issuerId, pagination);
   }
 
   async likeReel(body: { reelId: string; userId: string }): Promise<void> {
@@ -58,7 +53,7 @@ export class ReelService {
   async updateReelUploadStatus(
     jobId: string,
     data: {
-      uploadStatus: string;
+      status: string;
     },
   ): Promise<void> {
     const reel = await this.reelRepository.findOne({ jobId });
@@ -67,19 +62,24 @@ export class ReelService {
       return;
     }
 
+    const status =
+      data.status === 'COMPLETE'
+        ? ReelStatus.SUBMITTED
+        : ReelStatus.UPLOAD_ERROR;
+
     await this.reelRepository.updateReel(reel, {
-      uploadStatus: data.uploadStatus,
+      status,
     });
 
     // send FCM notification to client
   }
 
   async createReel(data: {
-    reelId: string;
+    objectId: string;
     issuerId: string;
   }): Promise<ReelEntity> {
     const metadata = await this.awsS3Service.getObjectMetadata({
-      key: data.reelId,
+      key: data.objectId,
       bucketName: this.appConfig.s3.bucketName,
     });
 
@@ -94,14 +94,14 @@ export class ReelService {
     }
 
     const existingReel = await this.reelRepository.findOne({
-      reelId: data.reelId,
+      objectId: data.objectId,
     });
 
     if (existingReel) {
       throw new ForbiddenException('Reel already uploaded!');
     }
 
-    const response = await this.awsMediaConvertService.createJob(data.reelId);
+    const response = await this.awsMediaConvertService.createJob(data.objectId);
     if (!response.Job) {
       throw new ForbiddenException('Job failed to transcode!');
     }
