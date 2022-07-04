@@ -9,7 +9,7 @@ const env = { ...require('./utils/env').parseDotEnv(), ...process.env };
 
 const {
   SnakeCaseNamingStrategy,
-} = require('~database/utils/snake-naming.strategy');
+} = require('./src/database/utils/snake-naming.strategy');
 
 /**
  * @see https://orkhan.gitbook.io/typeorm/docs/using-ormconfig#using-environment-variables
@@ -29,6 +29,7 @@ let config = {
   synchronize: false, // never use synchronize
   namingStrategy: new SnakeCaseNamingStrategy(),
   entities: ['./src/database/entities/*.entity.ts'],
+  seeds: ['src/database/seeds/**/*.seed{.ts,.js}'],
   migrations: ['./src/database/migrations/*{.ts,.js}'],
   cli: {
     entitiesDir: 'src/database/entities',

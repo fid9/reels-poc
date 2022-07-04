@@ -6,8 +6,10 @@ import {
   typeOrmConfigFactory,
   TYPEORM_CONFIG,
 } from '~modules/app/typeorm.config';
+import { AuctionModule } from '~modules/auction/auction.module';
 import { ReelModule } from '~modules/reel/reel.module';
 import { UserModule } from '~modules/user/user.module';
+import { AwsModule } from '~services/aws/aws.module';
 import { SentryModule } from '~services/sentry/sentry.module';
 
 import { configModuleRootFactory } from './app.config';
@@ -30,6 +32,8 @@ import { AppService } from './app.service';
     }),
     ReelModule,
     UserModule,
+    AwsModule,
+    AuctionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

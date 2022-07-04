@@ -12,6 +12,17 @@ import { globalPipes } from '~modules/app/app.pipes';
 import { usage } from '~utils/usage';
 import version from '~version';
 
+// function rawBody(req: any, res: any, next: any) {
+//   req.setEncoding('utf8');
+//   req.rawBody = '';
+//   req.on('data', function (chunk: any) {
+//     req.rawBody += chunk;
+//   });
+//   req.on('end', function () {
+//     next();
+//   });
+// }
+
 /**
  * Main application bootstrap
  */
@@ -22,6 +33,7 @@ async function bootstrap() {
   });
 
   app.useLogger(new EventLogService());
+  // app.use(rawBody);
 
   const appConfig = app.get<AppConfig>(APP_CONFIG);
   const {
