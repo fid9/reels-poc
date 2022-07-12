@@ -18,6 +18,7 @@ import {
 import { AppConfig, APP_CONFIG } from '~modules/app/app.config';
 import { AwsMediaConvertService } from '~services/aws/aws-mediaConvert.service';
 import { AwsS3Service } from '~services/aws/aws-s3.service';
+import { AwsSNSService } from '~services/aws/aws-sns.service';
 
 import { ReelStatus } from './enums/reel-status.enum';
 
@@ -25,6 +26,7 @@ import { ReelStatus } from './enums/reel-status.enum';
 export class ReelService {
   constructor(
     private awsS3Service: AwsS3Service,
+    private awsSnsService: AwsSNSService,
     private awsMediaConvertService: AwsMediaConvertService,
     @InjectRepository(ReelRepository)
     private reelRepository: ReelRepository,
@@ -32,6 +34,13 @@ export class ReelService {
     private userRepository: UserRepository,
     @Inject(APP_CONFIG) private appConfig: AppConfig,
   ) {}
+
+  public async confirmSnsSubscription(
+    token: string,
+    topicArn: string,
+  ): Promise<void> {
+    await this.awsSnsService.confirmSubscription(token, topicArn);
+  }
 
   public async getList(
     pagination: PaginationOptionsInterface,
@@ -102,6 +111,7 @@ export class ReelService {
     }
 
     const response = await this.awsMediaConvertService.createJob(data.objectId);
+
     if (!response.Job) {
       throw new ForbiddenException('Job failed to transcode!');
     }

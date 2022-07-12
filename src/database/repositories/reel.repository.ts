@@ -90,6 +90,7 @@ export class ReelRepository extends PostgresBaseRepository<ReelEntity> {
     try {
       return await this.save(reelEntity);
     } catch (e) {
+      console.log(e);
       throw new InternalServerErrorException('Internal error on DB');
     }
   }

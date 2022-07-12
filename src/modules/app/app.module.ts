@@ -1,7 +1,9 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 
+import { JsonBodyMiddleware } from '~middlewares/json-body.middleware';
+import { RawBodyMiddleware } from '~middlewares/raw-body.middleware';
 import {
   typeOrmConfigFactory,
   TYPEORM_CONFIG,
@@ -38,4 +40,15 @@ import { AppService } from './app.service';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer
+      .apply()
+      .forRoutes()
+      // json body parser
+      .apply(JsonBodyMiddleware)
+      .forRoutes('*')
+      .apply(RawBodyMiddleware)
+      .forRoutes('/reels/job-state-change');
+  }
+}
