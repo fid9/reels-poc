@@ -15,9 +15,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-     - name: Deploy dev lambda
-       if: ${{ github.ref_type == 'branch' && github.ref_name == 'develop' }}
-       run: echo '1'
+     - name: Deploy lambda
+       run: >
+        echo "$github.ref_type"
+        echo "$github.ref_name"
+        echo "$github.ref"
        
      - name: Deploy stg lambda
        if: ${{ github.ref_type == 'branch' && github.ref_name == 'master' }}
