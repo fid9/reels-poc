@@ -17,9 +17,7 @@ jobs:
     steps:
      - name: Deploy lambda
        run: >
-        echo "$github.ref_type"
-        echo "$github.ref_name"
-        echo "$github.ref"
+        echo "$GITHUB_CONTEXT"
        
      - name: Deploy stg lambda
        if: ${{ github.ref_type == 'branch' && github.ref_name == 'master' }}
