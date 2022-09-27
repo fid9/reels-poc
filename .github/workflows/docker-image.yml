@@ -15,14 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-     - name: Deploy lambda
-       run: >
-        echo "$GITHUB_CONTEXT"
-       
-     - name: Deploy stg lambda
-       if: ${{ github.ref_type == 'branch' && github.ref_name == 'master' }}
-       run: echo '2'
-       
-     - name: Deploy stg lambda
-       if: ${{ github.ref_type == 'tag' && startsWith(github.ref_name, 'v')  }}
-       run: echo '3'
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: echo "$GITHUB_CONTEXT"
