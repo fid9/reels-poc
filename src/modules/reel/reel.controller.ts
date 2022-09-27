@@ -3,11 +3,13 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   Post,
   Query,
   Request,
 } from '@nestjs/common';
+import { Request as ExpressRequest } from 'express';
 
 import { PaginatedList, PaginatedListQuery } from '~database/utils';
 
@@ -49,13 +51,29 @@ export class ReelController {
   }
 
   @Post('/job-state-change')
-  // @Header('content-type', 'text/plain; charset=UTF-8')
-  async handleJobStateChange(@Request() request: any): Promise<void> {
-    const event = JSON.parse(request.rawBody);
-    const message = JSON.parse(event.Message);
-    await this.reelService.updateReelUploadStatus(message.detail.jobId, {
-      status: message.detail.status,
-    });
+  @Header('content-type', 'text/plain; charset=UTF-8')
+  async handleJobStateChange(
+    @Request() request: ExpressRequest,
+  ): Promise<void> {
+    const event = JSON.parse(Buffer.from(request.body).toString());
+
+    switch (event.Type) {
+      case 'SubscriptionConfirmation':
+        await this.reelService.confirmSnsSubscription(
+          event.Token,
+          event.TopicArn,
+        );
+        break;
+      case 'Notification': {
+        const message = JSON.parse(event.Message);
+        await this.reelService.updateReelUploadStatus(message.detail.jobId, {
+          status: message.detail.status,
+        });
+        break;
+      }
+      default:
+        return;
+    }
   }
 
   @Post()
